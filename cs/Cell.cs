@@ -1,37 +1,37 @@
 using System; using static System.Numerics.BitOperations; using NUnit.Framework; namespace Sudoku {
 
 readonly struct Cell : IEquatable<Cell> {
-    readonly ushort _bits;
+    readonly ushort bits_;
 
     // public constructor
     public Cell( int values ) {
         var bits = 0;
         while( values > 0 ) { bits|= 1 << (values % 10); values/= 10; }
-        _bits = (ushort)(bits >> 1);
+        bits_ = (ushort)(bits >> 1);
     }
 
     // private constructor
-    Cell( ushort bits ) => _bits = bits;
+    Cell( ushort bits ) => bits_ = bits;
 
     // operators
-    public static bool operator==( Cell a, Cell b ) => a._bits == b._bits;
-    public static bool operator!=( Cell a, Cell b ) => a._bits != b._bits;
-    public static Cell operator+( Cell a, Cell b ) => new( (ushort)( a._bits | b._bits ) ); // union of two cells
-    public static Cell operator-( Cell a, Cell b ) => new( (ushort)( a._bits & ~b._bits ) ); // remove contents of cell 'b' from cell 'a'
-    public static Cell operator&( Cell a, Cell b ) => new( (ushort)( a._bits & b._bits ) ); // intersection of two cells
-    public static Cell operator~( Cell a ) => new( (ushort)( ~a._bits & 0x1FF ) ); // inverse of a cell
+    public static bool operator==( Cell a, Cell b ) => a.bits_ == b.bits_;
+    public static bool operator!=( Cell a, Cell b ) => a.bits_ != b.bits_;
+    public static Cell operator+( Cell a, Cell b ) => new( (ushort)( a.bits_ | b.bits_ ) ); // union of two cells
+    public static Cell operator-( Cell a, Cell b ) => new( (ushort)( a.bits_ & ~b.bits_ ) ); // remove contents of cell 'b' from cell 'a'
+    public static Cell operator&( Cell a, Cell b ) => new( (ushort)( a.bits_ & b.bits_ ) ); // intersection of two cells
+    public static Cell operator~( Cell a ) => new( (ushort)( ~a.bits_ & 0x1FF ) ); // inverse of a cell
 
     // properties
-    public int Count => PopCount( _bits );
-    public Cell Min => new( (ushort)MinSetBit( _bits ) );
-    public bool Single => IsPow2Or0( _bits );
-    public bool Solvable => 0 != _bits;
+    public int Count => PopCount( bits_ );
+    public Cell Min => new( (ushort)MinSetBit( bits_ ) );
+    public bool Single => IsPow2Or0( bits_ );
+    public bool Solvable => 0 != bits_;
     public bool Solved => Single & Solvable;
     
     // converts bit flags back into numbers i.e. 1245
     public int Values { get {
         int value = 0;
-        uint bits = _bits;
+        uint bits = bits_;
         for( var place = 1; 0 != bits; place*=10 ) {
             var maxBitIndex = Log2( bits );
             bits&= ~(1U << maxBitIndex); // remove the highest bit
@@ -42,14 +42,14 @@ readonly struct Cell : IEquatable<Cell> {
 
     // indexer
     public Cell this[int i] { get {
-        uint b = _bits;
+        uint b = bits_;
         while( i-- > 0 ) b = RemoveMinSetBit( b );
         return new( (ushort)MinSetBit( b ) );
     }}
 
     // overrides
     public override int GetHashCode() => throw new NotImplementedException( "'cell' type not suitable for hashmap (too many collisions)" );
-    public bool Equals( Cell c ) => _bits == c._bits;
+    public bool Equals( Cell c ) => bits_ == c.bits_;
     public override bool Equals( object o ) => throw new InvalidOperationException( "performance bug (boxing)" );
     public override string ToString() => Values.ToString();
 
@@ -62,7 +62,7 @@ readonly struct Cell : IEquatable<Cell> {
     [Test] public static void Test() {
         // solved cell
         Cell a = new( 3 );
-        Assert.AreEqual( 4, a._bits );
+        Assert.AreEqual( 4, a.bits_ );
         Assert.IsTrue( a.Single );
         Assert.IsTrue( a.Solvable );
         Assert.IsTrue( a.Solved );
@@ -92,7 +92,7 @@ readonly struct Cell : IEquatable<Cell> {
 
         // unsolvable cell
         a = new( 0 );
-        Assert.AreEqual( 0, a._bits );
+        Assert.AreEqual( 0, a.bits_ );
         Assert.IsTrue( a.Single );
         Assert.IsFalse( a.Solvable );
         Assert.IsFalse( a.Solved );
