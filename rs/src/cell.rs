@@ -2,7 +2,9 @@ use std::fmt;
 use std::ops;
 
 #[derive( Copy, Clone, Debug, Eq, PartialEq )]
-pub struct Cell { bits: u16 }
+pub struct Cell {
+    bits: u16
+}
 
 impl Cell {
     // constructor
@@ -14,14 +16,19 @@ impl Cell {
     
     // properties
     pub fn count( &self ) -> u32 { self.bits.count_ones() }
-    pub fn min( &self ) -> Cell { Cell { bits: min_bit( self.bits.into() ) as u16 } }
-    pub fn single( &self ) -> bool { is_pow2_or_zero( self.bits.into() ) }
+    
+    pub fn min( &self ) -> Cell { Cell { bits: min_bit( self.bits ) } }
+    
+    pub fn single( &self ) -> bool { is_pow2_or_zero( self.bits ) }
+    
     pub fn solvable( &self ) -> bool { self.bits > 0 }
+    
     pub fn solved( &self ) -> bool { self.single() & self.solvable() }
+    
     pub fn values( &self ) -> u32 {
         let mut values = 0;
         let mut place = 1;
-        let mut bits = self.bits.into();
+        let mut bits = self.bits as u32;
         while bits > 0 {
             let max_bit_index = log2( bits );
             values+=(max_bit_index + 1) * place;
@@ -32,23 +39,54 @@ impl Cell {
     }
 }
 
-// operators
-impl ops::Add for Cell { type Output = Cell; fn add( self, r: Cell ) -> Cell { Cell { bits: self.bits | r.bits } } }
-impl ops::AddAssign for Cell { fn add_assign( &mut self, r: Cell ) { *self = Cell { bits: self.bits | r.bits }; } }
-impl ops::Sub for Cell { type Output = Cell; fn sub( self, r: Cell ) -> Cell { Cell { bits: self.bits & !r.bits } } }
-impl ops::SubAssign for Cell { fn sub_assign( &mut self, r: Cell ) { *self = Cell { bits: self.bits & !r.bits } } }
-impl ops::BitAnd for Cell { type Output = Cell; fn bitand( self, r: Cell ) -> Cell { Cell { bits: self.bits & r.bits } } }
-impl ops::BitAndAssign for Cell { fn bitand_assign( &mut self, r: Cell ) { *self = Cell { bits: self.bits & r.bits } } }
-impl ops::Not for Cell { type Output = Cell; fn not( self ) -> Cell { Cell { bits: !self.bits & 0x1FF } } }
-
-// display
-impl fmt::Display for Cell { fn fmt( &self, f: &mut fmt::Formatter<'_> ) -> fmt::Result { write!( f, "{}", self.values() ) } }
-
 // utility functions
 fn clear_bit( x: u32, index: u32 ) -> u32 { x & !(1 << index) }
-fn is_pow2_or_zero( x: u32 ) -> bool { (x & (!x).wrapping_add( 1 )) == x }
 fn log2( x: u32 ) -> u32 { x.leading_zeros() ^ 31 }
-fn min_bit( x: u32 ) -> u32 { x & !x.wrapping_sub( 1 ) }
+fn is_pow2_or_zero( x: u16 ) -> bool { (x & (!x).wrapping_add( 1 )) == x }
+fn min_bit( x: u16 ) -> u16 { x & !x.wrapping_sub( 1 ) }
+
+// serialization
+impl fmt::Display for Cell {
+    fn fmt( &self, f: &mut fmt::Formatter<'_> ) -> fmt::Result {
+        write!( f, "{}", self.values() )
+    }
+}
+
+// '+' operator gives union of two cells
+impl ops::Add for Cell {
+    type Output = Cell;
+    fn add( self, r: Cell ) -> Cell { Cell { bits: self.bits | r.bits } }
+}
+
+impl ops::AddAssign for Cell {
+    fn add_assign( &mut self, r: Cell ) { *self = Cell { bits: self.bits | r.bits }; }
+}
+
+// '-' operator removes contents of cell
+impl ops::Sub for Cell {
+    type Output = Cell;
+    fn sub( self, r: Cell ) -> Cell { Cell { bits: self.bits & !r.bits } }
+}
+
+impl ops::SubAssign for Cell {
+    fn sub_assign( &mut self, r: Cell ) { *self = Cell { bits: self.bits & !r.bits } }
+}
+
+// '&' operator gives intersection of two cells
+impl ops::BitAnd for Cell {
+    type Output = Cell;
+    fn bitand( self, r: Cell ) -> Cell { Cell { bits: self.bits & r.bits } }
+}
+
+impl ops::BitAndAssign for Cell {
+    fn bitand_assign( &mut self, r: Cell ) { *self = Cell { bits: self.bits & r.bits } }
+}
+
+// '!' operater gives the inverse of a cell
+impl ops::Not for Cell {
+    type Output = Cell;
+    fn not( self ) -> Cell { Cell { bits: !self.bits & 0x1FF } }
+}
 
 // tests
 #[cfg(test)] mod tests {

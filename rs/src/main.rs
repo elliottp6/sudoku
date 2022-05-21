@@ -2,7 +2,6 @@ mod cell;
 mod grid;
 mod examples;
 mod solver;
-
 use cell::Cell;
 use grid::Grid;
 

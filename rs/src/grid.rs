@@ -2,7 +2,9 @@ use crate::Cell;
 use std::fmt;
 
 #[derive( Copy, Clone, Debug, Eq, PartialEq )]
-pub struct Grid { cells: [Cell; Grid::SIZE] }
+pub struct Grid {
+    cells: [Cell; Grid::SIZE]
+}
 
 impl Grid {
     // dimensions
@@ -18,24 +20,32 @@ impl Grid {
     }
 
     // properties
-    pub fn solvable( &self ) -> bool { self.cells.iter().all( |&cell| cell.solvable() ) }
-    pub fn solved( &self ) -> bool { self.cells.iter().all( |&cell| cell.solved() ) }
+    pub fn solvable( &self ) -> bool { self.cells.iter().all( |&c| c.solvable() ) }
+    pub fn solved( &self ) -> bool { self.cells.iter().all( |&c| c.solved() ) }
 }
 
-// display
+// serialization
 impl fmt::Display for Grid {
     fn fmt( &self, f: &mut fmt::Formatter<'_> ) -> fmt::Result {
+        // serialize all the cells
         for (i, cell) in self.cells.iter().enumerate() {
             // write separators
             if i > 0 {
-                if 0 == i % 9 { writeln!( f ); if 0 == i % 27 { writeln!( f, "------+------+------" ); } }
-                else { write!( f, " " ); if 0 == i % 3 { write!( f, "|" ); } }
+                if 0 == i % 9 {
+                    writeln!( f );
+                    if 0 == i % 27 { writeln!( f, "------+------+------" ); }
+                } else {
+                    write!( f, " " );
+                    if 0 == i % 3 { write!( f, "|" ); }
+                }
             }
             
             // write value
             let value = cell.values();
             if value < 10 { write!( f, "{}", value ); } else { write!( f, "_" ); }
         }
+
+        // return value
         write!( f, "" )
     }
 }

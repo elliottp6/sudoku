@@ -1,6 +1,5 @@
 use crate::Grid;
 
-// TODO: these grids could be generated at compile time instead of using 'new'
 pub fn lookup( name: &str ) -> Grid {
     const X : u32 = 123456789;
     match name {
