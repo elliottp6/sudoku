@@ -24,7 +24,7 @@ public:
 
 private:
     // fields
-    std::array<Cell,Size> _cells;
+    std::array<Cell,Size> cells_;
 };
 
 } // namespace

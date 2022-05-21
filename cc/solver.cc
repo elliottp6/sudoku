@@ -9,7 +9,7 @@ bool Solver::Constrain( Grid& grid ) {
         auto single = cell.single();
 
         // -- HORIZONTAL UNIT --
-        auto unit = Cell();
+        //auto unit = Cell();
         for( auto peer_x = 0; peer_x < Grid::Width; peer_x++ ) if( peer_x != x ) {
             Cell &peer = grid.at( peer_x, y );
             Cell peer_orig = peer;

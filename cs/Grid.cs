@@ -7,20 +7,41 @@ unsafe struct Grid {
     // constructor
     public Grid( params int[] numbers ) {
         if( numbers.Length != SIZE ) throw new ArgumentOutOfRangeException( $"must specify {SIZE} values, but got {numbers.Length} values" );
-        for( var i = 0; i < SIZE; i++ ) this[i] = new Cell( numbers[i] );
+        for( var i = 0; i < SIZE; i++ )
+            this[i] = new Cell( numbers[i] );
     }
 
     // properties
-    public bool Solvable { get { for( var i = 0; i < SIZE; i++ ) if( !this[i].Solvable ) return false; return true; }}
-    public bool Solved { get { for( var i = 0; i < SIZE; i++ ) if( !this[i].Solved ) return false; return true; } }
+    public bool Solvable { get {
+        for( var i = 0; i < SIZE; i++ )
+            if( !this[i].Solvable ) return false;
+        return true;
+    }}
+
+    public bool Solved { get {
+        for( var i = 0; i < SIZE; i++ )
+            if( !this[i].Solved ) return false;
+        return true;
+    }}
 
     // indexers
-    public Cell this[int x, int y] { get => this[x + y*WIDTH]; set => this[x + y*WIDTH] = value; }
     public Cell this[int i] {
-        get { if( (i < 0) | (i >= SIZE) ) throw new IndexOutOfRangeException(); var c = _cells[i]; return *(Cell*)&c; }
-        set { if( (i < 0) | (i >= SIZE) ) throw new IndexOutOfRangeException(); _cells[i] = *(ushort*)&value; }
+        get {
+            if( (i < 0) | (i >= SIZE) ) throw new IndexOutOfRangeException();
+            var c = _cells[i];
+            return *(Cell*)&c;
+        } 
+        set {
+            if( (i < 0) | (i >= SIZE) ) throw new IndexOutOfRangeException();
+            _cells[i] = *(ushort*)&value;
+        }
     }
 
+    public Cell this[int x, int y] {
+        get => this[x + y*WIDTH];
+        set => this[x + y*WIDTH] = value;
+    }
+    
     // methods
     public bool Equals( ref Grid g ) {
         for( var i = 0; i < SIZE; i++ ) if( _cells[i] != g._cells[i] ) return false;
@@ -30,7 +51,7 @@ unsafe struct Grid {
     // overrides
     public override string ToString() => ToString( false );
     public string ToString( bool showSets ) {
-        var b = new StringBuilder();
+        StringBuilder b = new();
         for( var i = 0; i < SIZE; i++ ) {
             if( i > 0 ) {
                 if( 0 == i % 9 ) { b.AppendLine(); if( 0 == i % 27 ) b.AppendLine( "------+------+------" ); }
@@ -45,7 +66,7 @@ unsafe struct Grid {
     // tests
     [Test] public static void Test() {
         // solved grid
-        var g = new Grid(
+        Grid g = new(
             4, 8, 3, 9, 2, 1, 6, 5, 7,
             9, 6, 7, 3, 4, 5, 8, 2, 1,
             2, 5, 1, 8, 7, 6, 4, 9, 3,
@@ -59,12 +80,12 @@ unsafe struct Grid {
         Assert.IsTrue( g.Solved );
 
         // unsolved grid
-        g[8,8] = new Cell( 1289 );
+        g[8,8] = new( 1289 );
         Assert.IsTrue( g.Solvable );
         Assert.IsFalse( g.Solved );
         
         // unsolvable grid
-        g[4,4] = new Cell( 0 );
+        g[4,4] = new( 0 );
         Assert.IsFalse( g.Solvable );
         Assert.IsFalse( g.Solved );
         

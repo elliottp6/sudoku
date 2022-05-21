@@ -12,25 +12,27 @@ DEBUG_EXE = $(DEBUG_FOLDER)/$(EXE)
 RELEASE_EXE = $(RELEASE_FOLDER)/$(EXE)
 
 # objects
-SOURCES = $(shell find . -name "*.cc" ! -wholename "*/dead/*") # all *.cc files, except those in the "dead" folder
+SOURCES = $(shell find . -name "*.cc" ! -wholename "*/trash/*") # all *.cc files, except those in the "trash" folder
 OBJECTS = $(SOURCES:%.cc=%.o)
 DEBUG_OBJECTS = $(addprefix $(DEBUG_FOLDER)/, $(OBJECTS))
 RELEASE_OBJECTS = $(addprefix $(RELEASE_FOLDER)/, $(OBJECTS))
 
 # compilation flags
-LIBS = -std=c++17 -pthread -lSDL2 -lSDL2main -lX11 -lgtest
-DEBUG_FLAGS = -Wall -Wextra -g -DDEBUG #Werror
-RELEASE_FLAGS = -Wall -Wextra -Ofast -flto -fopenmp -DNDEBUG
+LIBS = -std=c++17 -lgtest -pthread
+DEBUG_FLAGS = -Wall -Wextra -Werror -DDEBUG -g
+RELEASE_FLAGS = -Wall -Wextra -Werror -DNDEBUG -Ofast -flto
 
 # top-level targets
 debug: $(DEBUG_EXE)
 release: $(RELEASE_EXE)
 
-# link
+# link & test
 $(DEBUG_EXE): $(DEBUG_OBJECTS)
 	g++ -o $@ $^ $(DEBUG_FLAGS) $(LIBS)
+	bin/debug/main test
 $(RELEASE_EXE): $(RELEASE_OBJECTS)
 	g++ -o $@ $^ $(RELEASE_FLAGS) $(LIBS)
+	bin/release/main test
 
 # compile
 $(DEBUG_FOLDER)/%.o: %.cc
