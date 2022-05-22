@@ -1,7 +1,11 @@
 #include "solver.h"
 namespace Sudoku {
 
-bool Solver::Constrain( Grid& grid ) {
+// --Constraints--
+// (1) NAKED SINGLE: if a cell has a single value, remove that value from its peers
+// (2) HIDDEN SINGLE: if all the peers are missing the same value, this cell must have that value
+// return True if the grid was modified
+__attribute__((unused)) static bool Constrain( Grid& grid ) {
     auto modified = false;
     for( auto y = 0; y < Grid::Height; y++ ) for( auto x = 0; x < Grid::Width; x++ ) {
         // get cell @ [x,y]
@@ -24,15 +28,8 @@ bool Solver::Constrain( Grid& grid ) {
         // -- TILE UNIT --
         // TODO
 
-        // set cell
-        grid.at( x, y ) = cell;
-    }
-    return modified;
-}
+        /*
 
-} // namespace
-
-/*
        for( var peer_x = 0; peer_x < Grid.WIDTH; peer_x++ ) if( peer_x != x ) {
                 peer = peer1 = grid[peer_x,y];
                 if( single ) modified|= (peer-=cell) != peer1; // CONSTRAINT #1
@@ -67,6 +64,42 @@ bool Solver::Constrain( Grid& grid ) {
         }
         return modified;
     }
+
+        */
+
+        // set cell
+        grid.at( x, y ) = cell;
+    }
+    return modified;
+}
+
+bool Solver::Solve( Grid& grid, bool interactive, __attribute__((unused)) bool guessing ) {
+    for(;;) {
+        // first, constrain the puzzle as much as possible
+        for( auto i = 0;; i++ ) {
+            // print puzzle state and wait for user keypress
+            if( interactive ) {
+                std::cout << "==iteration " << i << "==" << std::endl;
+                std::cout << grid << std::endl;
+
+                // TODO: we want to wait for any keypress but std::getchar waits for 'enter' to be pressed
+                if( 'q' == std::getchar() ) return false;
+            }
+
+            // 
+        }
+    }
+}
+
+
+} // namespace
+
+/*
+    auto i = 0;
+    do {
+        std::cout << "iteration: " << (i++) << std::endl;
+        std::cout << easy << std::endl;
+    } while( ' ' == std::cin.get() && Solver::Constrain( easy ) );
 
     public static bool Solve( this ref Grid g, bool interactive = false, bool showSets = false, bool allowGuessing = true, int guesses = 0 ) {
         for(;;) {

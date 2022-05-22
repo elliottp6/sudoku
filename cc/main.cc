@@ -1,12 +1,12 @@
-#include <iostream> // C++ input/output
-#include <gtest/gtest.h> // google test
+#include <iostream>
+#include <gtest/gtest.h>
 #include "cell.h"
 #include "grid.h"
 #include "examples.h"
 #include "solver.h"
 using namespace Sudoku;
 
-int main( int argc, char** argv ) {
+int main( int argc, char* argv[] ) {
     // check for at least one command argument
     if( argc < 2 ) {
         std::cout << "must specify a command to run" << std::endl;
@@ -22,28 +22,28 @@ int main( int argc, char** argv ) {
         return RUN_ALL_TESTS();
     }
 
-    /*
-    // print out some stuff about cells
-    auto a = Cell( 25 ), b = Cell( 125 );
-    std::cout << "this is for the debugger!" << std::endl;
-    std::cout << "Are equal: " << (a == b) << std::endl;
-    std::cout << "Cell has " << a.count() << " values, which means single: " << a.single() << " with values " << a << std::endl;
+    // solve an example grid
+    if( "solve-example" == command ) {
+        // for for example-name argument
+        if( argc < 3 ) {
+            std::cout << "must specify the name of an example grid to run" << std::endl;
+            return 0;
+        }
 
-    // print out some stuff about a grid
-    auto g = Grid( std::array<int,Grid::Size> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9 } );
-    std::cout << "\ngrid looks like:\n" << g << std::endl << std::endl;
+        // lookup example & solve
+        const std::string name = argv[2];
+        auto grid = Examples::Lookup( name );
+        Solver::Solve( grid, true );
+        return 0;
+    }
 
-    // solve the easy grid
-    auto easy = Examples::Lookup( "easy" );
-    auto i = 0;
-    do {
-        std::cout << "iteration: " << (i++) << std::endl;
-        std::cout << easy << std::endl;
-    } while( ' ' == std::cin.get() && Solver::Constrain( easy ) );
+    // solve a user-supplied grid
+    if( "solve-custom" == command ) {
+        // TODO
+        return 0;
+    }
 
-    // print out solution
-    // TODO
-    */
+    // otherwise, command was not recognized
     std::cout << "unrecognized command: " << command << std::endl;
     return 0;
 }
