@@ -6,79 +6,57 @@ namespace Sudoku {
 // (2) HIDDEN SINGLE: if all the peers are missing the same value, this cell must have that value
 // return True if the grid was modified
 __attribute__((unused)) static bool Constrain( Grid& grid ) {
+    // keep track of if we modified any cells
     auto modified = false;
+    
+    // loop through each cell, applying constraints
     for( auto y = 0; y < Grid::Height; y++ ) for( auto x = 0; x < Grid::Width; x++ ) {
         // get cell @ [x,y]
-        auto cell = grid.at( x, y );
+        Cell &cell = grid.at( x, y );
         auto single = cell.single();
 
         // -- HORIZONTAL UNIT --
-        //auto unit = Cell();
+        auto unit = Cell();
         for( auto peer_x = 0; peer_x < Grid::Width; peer_x++ ) if( peer_x != x ) {
             Cell &peer = grid.at( peer_x, y );
             Cell peer_orig = peer;
             if( single ) modified|= peer_orig != (peer -= cell); // constraint # 1
-            //unit += peer;
+            unit += peer;
         }
-        //if( !single & (unit = ~unit).solved() ) { single = modified = true; cell = unit; } // constraint #2
+        if( !single & (unit = ~unit).solved() ) { single = modified = true; cell = unit; } // constraint #2
 
         // -- VERTICAL UNIT --
-        // TODO
+        unit = Cell();
+        for( auto peer_y = 0; peer_y < Grid::Height; peer_y++ ) if( peer_y != y ) {
+            Cell &peer = grid.at( x, peer_y );
+            Cell peer_orig = peer;
+            if( single ) modified|= peer_orig != (peer -= cell); // constraint # 1
+            unit += peer;
+        }
+        if( !single & (unit = ~unit).solved() ) { single = modified = true; cell = unit; } // constraint #2
 
         // -- TILE UNIT --
-        // TODO
-
-        /*
-
-       for( var peer_x = 0; peer_x < Grid.WIDTH; peer_x++ ) if( peer_x != x ) {
-                peer = peer1 = grid[peer_x,y];
-                if( single ) modified|= (peer-=cell) != peer1; // CONSTRAINT #1
-                unit += peer;
-                grid[peer_x,y] = peer;
-            }
-            if( !single & (unit = ~unit).Solved ) { single = modified = true; cell = unit; } // CONSTRAINT #2
-
-            // -- VERITCAL UNIT --
-            unit = default;
-            for( var peer_y = 0; peer_y < Grid.HEIGHT; peer_y++ ) if( peer_y != y ) {
-                peer = peer1 = grid[x,peer_y];
-                if( single ) modified|= (peer-=cell) != peer1; // CONSTRIANT #1
-                unit += peer;
-                grid[x,peer_y] = peer;
-            }
-            if( !single & (unit = ~unit).Solved ) { single = modified = true; cell = unit; } // CONSTRAINT #2
-
-            // -- TILE UNIT --
-            unit = default;
-            int tile_x = 3 * (x / 3), tile_y = 3 * (y / 3);
-            for( var peer_y = tile_y; peer_y < tile_y + 3; peer_y++ ) for( var peer_x = tile_x; peer_x < tile_x + 3; peer_x++ ) if( !((peer_x == x) & (peer_y == y)) ) {
-                peer = peer1 = grid[peer_x,peer_y];
-                if( single ) modified|= (peer-=cell) != peer1; // CONSTRAINT #1
-                unit += peer;
-                grid[peer_x,peer_y] = peer;
-            }
-            if( !single & (unit = ~unit).Solved ) { single = modified = true; cell = unit; } // CONSTRAINT #2
-
-            // set cell
-            grid[x,y] = cell;
+        unit = Cell();
+        auto tile_x = 3 * (x / 3), tile_y = 3 * (y / 3);
+        for( auto peer_y = tile_y; peer_y < tile_y + 3; peer_y++ ) for( auto peer_x = tile_x; peer_x < tile_x + 3; peer_x++ ) if( !((peer_x == x) & (peer_y == y)) ) {
+            Cell &peer = grid.at( peer_x, peer_y );
+            Cell peer_orig = peer;
+            if( single ) modified|= peer_orig != (peer -= cell); // constraint # 1
+            unit += peer;
         }
-        return modified;
+        if( !single & (unit = ~unit).solved() ) { single = modified = true; cell = unit; } // constraint #2
     }
 
-        */
-
-        // set cell
-        grid.at( x, y ) = cell;
-    }
+    // return true if we modified any of the cells
     return modified;
 }
 
-bool Solver::Solve( Grid& grid, bool interactive, __attribute__((unused)) bool guessing ) {
+bool Solver::Solve( Grid& grid, __attribute__((unused)) bool guess, bool prompt ) {
     for(;;) {
         // first, constrain the puzzle as much as possible
         for( auto i = 0;; i++ ) {
             // print puzzle state and wait for user keypress
-            if( interactive ) {
+            if( prompt ) {
                 std::cout << "==iteration " << i << "==" << std::endl;
                 std::cout << grid << std::endl;
 
@@ -90,7 +68,6 @@ bool Solver::Solve( Grid& grid, bool interactive, __attribute__((unused)) bool g
         }
     }
 }
-
 
 } // namespace
 
