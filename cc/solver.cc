@@ -1,54 +1,43 @@
 #include "solver.h"
 namespace Sudoku {
 
-// --Constraints--
-// (1) NAKED SINGLE: if a cell has a single value, remove that value from its peers
-// (2) HIDDEN SINGLE: if all the peers are missing the same value, this cell must have that value
-// return True if the grid was modified
-__attribute__((unused)) static bool Constrain( Grid& grid ) {
-    // keep track of if we modified any cells
-    auto modified = false;
-    
-    // loop through each cell, applying constraints
-    for( auto y = 0; y < Grid::Height; y++ ) for( auto x = 0; x < Grid::Width; x++ ) {
-        // get cell @ [x,y]
-        Cell &cell = grid.at( x, y );
-        auto single = cell.single();
+static bool ConstrainUnit( Grid& grid, int cell_x, int cell_y, int unit_x, int unit_y, int unit_width, int unit_height ) {
+    // get cell
+    Cell &cell = grid.at( cell_x, cell_y );
 
-        // -- HORIZONTAL UNIT --
-        auto unit = Cell();
-        for( auto peer_x = 0; peer_x < Grid::Width; peer_x++ ) if( peer_x != x ) {
-            Cell &peer = grid.at( peer_x, y );
-            Cell peer_orig = peer;
-            if( single ) modified|= peer_orig != (peer -= cell); // constraint # 1
-            unit += peer;
+    // NAKED SINGLE: if a cell has a single value, remove that value from its peers
+    if( cell.single() ) {
+        auto modified = false;
+        for( auto y = unit_y; y < unit_y + unit_height; y++ ) for( auto x = unit_x; x < unit_x + unit_width; x++ ) if( (x != cell_x) | (y != cell_y) ) {
+            Cell& peer = grid.at( x, y );
+            Cell old = peer;
+            peer-=cell;
+            modified|= peer != old;
         }
-        if( !single & (unit = ~unit).solved() ) { single = modified = true; cell = unit; } // constraint #2
-
-        // -- VERTICAL UNIT --
-        unit = Cell();
-        for( auto peer_y = 0; peer_y < Grid::Height; peer_y++ ) if( peer_y != y ) {
-            Cell &peer = grid.at( x, peer_y );
-            Cell peer_orig = peer;
-            if( single ) modified|= peer_orig != (peer -= cell); // constraint # 1
-            unit += peer;
-        }
-        if( !single & (unit = ~unit).solved() ) { single = modified = true; cell = unit; } // constraint #2
-
-        // -- TILE UNIT --
-        unit = Cell();
-        auto tile_x = 3 * (x / 3), tile_y = 3 * (y / 3);
-        for( auto peer_y = tile_y; peer_y < tile_y + 3; peer_y++ ) for( auto peer_x = tile_x; peer_x < tile_x + 3; peer_x++ ) if( !((peer_x == x) & (peer_y == y)) ) {
-            Cell &peer = grid.at( peer_x, peer_y );
-            Cell peer_orig = peer;
-            if( single ) modified|= peer_orig != (peer -= cell); // constraint # 1
-            unit += peer;
-        }
-        if( !single & (unit = ~unit).solved() ) { single = modified = true; cell = unit; } // constraint #2
+        return modified;
     }
 
-    // return true if we modified any of the cells
+    // HIDDEN SINGLE: if all the peers are missing the same value, this cell must have that value
+    Cell unit = Cell();
+    for( auto y = unit_y; y < unit_y + unit_height; y++ ) for( auto x = unit_x; x < unit_x + unit_width; x++ ) if( (x != cell_x) | (y != cell_y) ) {
+        unit+= grid.at( x, y );
+    }
+    if( (unit = ~unit).solved() ) { cell = unit; return true; }
+    return false;
+}
+
+static bool Constrain( Grid& grid ) {
+    auto modified = false;
+    for( auto y = 0; y < Grid::Height; y++ ) for( auto x = 0; x < Grid::Width; x++ ) {
+        modified|= ConstrainUnit( grid, x, y, 0, y, Grid::Width, 1 ); 
+        modified|= ConstrainUnit( grid, x, y, x, 0, 1, Grid::Height );
+        modified|= ConstrainUnit( grid, x, y, 3 * (x / 3), 3 * (y / 3), 3, 3 );
+    }
     return modified;
+}
+
+static void FullyConstrain( Grid& grid ) {
+    while( Constrain( grid ) );
 }
 
 bool Solver::Solve( Grid& grid, __attribute__((unused)) bool guess, bool prompt ) {
@@ -64,7 +53,14 @@ bool Solver::Solve( Grid& grid, __attribute__((unused)) bool guess, bool prompt 
                 if( 'q' == std::getchar() ) return false;
             }
 
-            // 
+            // check if we found a solution
+            if( grid.solved() ) return true;
+            if( !grid.solvable() ) return false;
+
+            // otherwise, fully constrain the grid
+            FullyConstrain( grid );
+
+            // TODO: use the guess & check method
         }
     }
 }

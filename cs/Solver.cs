@@ -1,27 +1,30 @@
 using System; using NUnit.Framework; namespace Sudoku {
 
 static class Solver {
-    // --Constraints--
-    // (1) NAKED SINGLE: if a cell has a single value, remove that value from its peers
-    // (2) HIDDEN SINGLE: if all the peers are missing the same value, this cell must have that value
     static bool ConstrainUnit( this ref Grid grid, int cellX, int cellY, int unitX, int unitY, int unitWidth, int unitHeight ) {
-        Cell cell = grid[cellX, cellY], unit = default;
-        bool single = cell.Single, modified = false;
+        // get cell
+        Cell cell = grid[cellX, cellY];
 
-        // iterate over all peer cells (i.e. all cells in the unit except for the cell @ (cellX, cellY))
-        for( var x = unitX; x < unitX + unitWidth; x++ ) for( var y = unitY; y < unitY + unitHeight; y++ ) if( (x != cellX) | (y != cellY) ) {
-            Cell peer = grid[x,y], peer_orig = peer;
-            if( single ) modified|= (peer-=cell) != peer_orig; // CONSTRIANT #1
-            unit+= grid[x,y] = peer;
+        // NAKED SINGLE: if a cell has a single value, remove that value from its peers
+        if( cell.Single ) {
+            var modified = false;
+            for( var y = unitY; y < unitY + unitHeight; y++ ) for( var x = unitX; x < unitX + unitWidth; x++ ) if( (x != cellX) | (y != cellY) ) {
+                var peer = grid[x,y];
+                var old = peer;
+                peer-= cell;
+                modified|= peer != old;
+                grid[x,y] = peer;
+            }
+            return modified;
         }
-        
-        // CONSTRAINT #2
-        if( !single & (unit = ~unit).Solved ) { single = modified = true; cell = unit; }
 
-        // update cell
-        grid[cellX,cellY] = cell;
-
-        return modified;
+        // HIDDEN SINGLE: if all the peers are missing the same value, this cell must have that value
+        Cell unit = default;
+        for( var y = unitY; y < unitY + unitHeight; y++ ) for( var x = unitX; x < unitX + unitWidth; x++ ) if( (x != cellX) | (y != cellY) ) {
+            unit+= grid[x,y];
+        }
+        if( (unit = ~unit).Solved ) { grid[cellX,cellY] = unit; return true; }
+        return false;
     }
 
     // constrain horizontal, veritcal, then 3x3
