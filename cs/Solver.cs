@@ -4,46 +4,33 @@ static class Solver {
     // --Constraints--
     // (1) NAKED SINGLE: if a cell has a single value, remove that value from its peers
     // (2) HIDDEN SINGLE: if all the peers are missing the same value, this cell must have that value
+    static bool ConstrainUnit( this ref Grid grid, int cellX, int cellY, int unitX, int unitY, int unitWidth, int unitHeight ) {
+        Cell cell = grid[cellX, cellY], unit = default;
+        bool single = cell.Single, modified = false;
+
+        // iterate over all peer cells (i.e. all cells in the unit except for the cell @ (cellX, cellY))
+        for( var x = unitX; x < unitX + unitWidth; x++ ) for( var y = unitY; y < unitY + unitHeight; y++ ) if( (x != cellX) | (y != cellY) ) {
+            Cell peer = grid[x,y], peer_orig = peer;
+            if( single ) modified|= (peer-=cell) != peer_orig; // CONSTRIANT #1
+            unit+= grid[x,y] = peer;
+        }
+        
+        // CONSTRAINT #2
+        if( !single & (unit = ~unit).Solved ) { single = modified = true; cell = unit; }
+
+        // update cell
+        grid[cellX,cellY] = cell;
+
+        return modified;
+    }
+
+    // constrain horizontal, veritcal, then 3x3
     public static bool Constrain( this ref Grid grid ) {
         var modified = false;
         for( var y = 0; y < Grid.HEIGHT; y++ ) for( var x = 0; x < Grid.WIDTH; x++ ) {
-            // get cell
-            var cell = grid[x,y];
-            var single = cell.Single;
-
-            // -- HORIZONTAL UNIT --
-            Cell unit = default;
-            for( var peer_x = 0; peer_x < Grid.WIDTH; peer_x++ ) if( peer_x != x ) {
-                Cell peer = grid[peer_x,y], peer1 = peer;
-                if( single ) modified|= (peer-=cell) != peer1; // CONSTRAINT #1
-                unit += peer;
-                grid[peer_x,y] = peer;
-            }
-            if( !single & (unit = ~unit).Solved ) { single = modified = true; cell = unit; } // CONSTRAINT #2
-
-            // -- VERITCAL UNIT --
-            unit = default;
-            for( var peer_y = 0; peer_y < Grid.HEIGHT; peer_y++ ) if( peer_y != y ) {
-                Cell peer = grid[x,peer_y], peer1 = peer;
-                if( single ) modified|= (peer-=cell) != peer1; // CONSTRIANT #1
-                unit += peer;
-                grid[x,peer_y] = peer;
-            }
-            if( !single & (unit = ~unit).Solved ) { single = modified = true; cell = unit; } // CONSTRAINT #2
-
-            // -- TILE UNIT --
-            unit = default;
-            int tile_x = 3 * (x / 3), tile_y = 3 * (y / 3);
-            for( var peer_y = tile_y; peer_y < tile_y + 3; peer_y++ ) for( var peer_x = tile_x; peer_x < tile_x + 3; peer_x++ ) if( !((peer_x == x) & (peer_y == y)) ) {
-                Cell peer = grid[peer_x,peer_y], peer1 = peer;
-                if( single ) modified|= (peer-=cell) != peer1; // CONSTRAINT #1
-                unit += peer;
-                grid[peer_x,peer_y] = peer;
-            }
-            if( !single & (unit = ~unit).Solved ) { single = modified = true; cell = unit; } // CONSTRAINT #2
-
-            // set cell
-            grid[x,y] = cell;
+            modified|= grid.ConstrainUnit( x, y, 0, y, Grid.WIDTH, 1 ); 
+            modified|= grid.ConstrainUnit( x, y, x, 0, 1, Grid.HEIGHT );
+            modified|= grid.ConstrainUnit( x, y, 3 * (x / 3), 3 * (y / 3), 3, 3 );
         }
         return modified;
     }
