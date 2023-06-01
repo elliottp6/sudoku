@@ -10,11 +10,30 @@ Grid::Grid( const std::array<int,Size>& values ) {
 }
 
 // methods
+Cell& Grid::at( int i ) {
+    return cells_.at( i );
+}
+
 Cell& Grid::at( int x, int y ) {
     return cells_.at( y * Grid::Width + x );
 }
 
 // properties
+int Grid::simplest_unsolved_cell_index() const {
+    auto guess = -1, guess_count = 10;
+    for( auto i = 0; i < Size; i++ ) {
+        // get # of values at this cell
+        auto count = cells_.at( i ).count();
+
+        // update best guess
+        if( count >= 2 && count < guess_count ) {
+            if( 2 == count ) return i; // early exit
+            guess_count = count; guess = i;
+        }
+    }
+    return guess;
+}
+
 bool Grid::solvable() const {
     for( auto& cell : cells_ )
         if( !cell.solvable() ) return false;

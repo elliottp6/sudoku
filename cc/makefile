@@ -1,3 +1,5 @@
+# sudo apt install googletest libgtest-dev
+
 # parameters for "make" (must come first in file!)
 # this parameter enables parallel compilation based on the # of processors
 MAKEFLAGS+=j$(shell nproc)

@@ -36,7 +36,7 @@ static bool Constrain( Grid& grid ) {
     return modified;
 }
 
-bool Solver::Solve( Grid& grid, __attribute__((unused)) bool guess, bool interactive ) {
+bool Solver::Solve( Grid& grid, bool interactive ) {
     for(;;) {
         // constrain grid
         do {
@@ -45,7 +45,7 @@ bool Solver::Solve( Grid& grid, __attribute__((unused)) bool guess, bool interac
                 std::cout << grid << std::endl;
                 while( std::cin.get() != '\n' );
             }
-        } while( Constrain( grid ) );
+        } while( grid.solvable() && Constrain( grid ) );
 
         // check for end state
         if( grid.solved() ) {
@@ -56,65 +56,33 @@ bool Solver::Solve( Grid& grid, __attribute__((unused)) bool guess, bool interac
             return false;
         }
 
-        // now, resort to guessing
-        if( interactive ) std::cout << "guessing required, but not yet implemented." << std::endl;
-        return false;
+        // identify the simplest unsolved cell
+        auto cell_index = grid.simplest_unsolved_cell_index();
+        Cell &cell = grid.at( cell_index );
+
+        // guess one of the values (just use the minimum)
+        Cell guess = cell.min();
+
+        // copy the grid to a guess-grid, with our guess in place
+        Grid guess_grid = grid;
+        guess_grid.at( cell_index ) = guess;
+        if( interactive ) std::cout << "guessing" << std::endl;
+
+        // try to solve the guess-grid. if we solved it, then our guess was correct.
+        if( Solve( guess_grid, interactive ) ) {
+            grid = guess_grid;
+            return true;
+        }
+
+        // if guess-grid was not solvable, our guess was wrong. remove it, and continue solving
+        cell -= guess;
+        if( interactive ) std::cout << "bad guess" << std::endl;
     }
 }
 
 } // namespace
 
 /*
-    auto i = 0;
-    do {
-        std::cout << "iteration: " << (i++) << std::endl;
-        std::cout << easy << std::endl;
-    } while( ' ' == std::cin.get() && Solver::Constrain( easy ) );
-
-    public static bool Solve( this ref Grid g, bool interactive = false, bool showSets = false, bool allowGuessing = true, int guesses = 0 ) {
-        for(;;) {
-            // first, constrain the puzzle as much as possible
-            var iteration = 0;
-            do {
-                if( interactive ) {
-                    Console.WriteLine( $"--iteration {iteration++}---------------------------------------------------" );
-                    Console.WriteLine( g.ToString( showSets ) );
-                    var k = Console.ReadKey( true ).Key;
-                    if( ConsoleKey.Escape == k || ConsoleKey.Q == k ) return true;
-                }
-            } while( g.Solvable && g.Constrain() );
-
-            // find the index of an unsolved cell with the least possibilities
-            var solved = true;
-            int unsolvedIndex = -1, unsolvedCount = 10;
-            for( var i = 0; i < Grid.SIZE; i++ ) {
-                var count = g[i].Count;
-                if( 0 == count ) { if( interactive ) Console.WriteLine( "Dead end!" ); return false; } // found unsolvable cell
-                solved&= (1 == count); // check if the entire puzzle is solved
-                if( (count > 1) & (count < unsolvedCount) ) { unsolvedCount = count; unsolvedIndex = i; }
-            }
-
-            // if solved, then return true
-            if( solved ) {
-                if( interactive ) Console.WriteLine( "Solved!" );
-                return true;
-            }
-
-            // use the guess method to remove values
-            if( !allowGuessing ) return false;
-            var cell = g[unsolvedIndex];
-            var guess = cell.Min;
-            var copy = g;
-            copy[unsolvedIndex] = guess;
-            if( interactive ) Console.WriteLine( $"guess {guess} at {1 + unsolvedIndex % 9},{1 + unsolvedIndex / 9} from potentials {cell} (# guesses: {guesses + 1})" );
-            if( Solve( ref copy, interactive, showSets, true, guesses + 1 ) ) { g = copy; return true; }
-
-            // otherwise, that was a bad guess, so remove it and restart the process
-            g[unsolvedIndex]-=guess;
-            if( interactive ) Console.WriteLine( $"bad guess! removing {guess} from {1 + unsolvedIndex % 9},{1 + unsolvedIndex / 9} leaving {g[unsolvedIndex]} (# guesses: {guesses})" );           
-        }
-    }
-
     // tests
     [Test] public static void Test() {
         // solve "top-row-only", which has multiple solutions. don't use the guess method

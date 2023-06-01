@@ -33,7 +33,7 @@ int main( int argc, char* argv[] ) {
         // lookup example & solve
         const std::string name = argv[2];
         auto grid = Examples::Lookup( name );
-        Solver::Solve( grid, true, true );
+        Solver::Solve( grid, true );
         return 0;
     }
 

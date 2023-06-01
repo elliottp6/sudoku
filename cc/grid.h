@@ -13,9 +13,11 @@ public:
     Grid( const std::array<int,Size>& values );
 
     // methods
+    Cell& at( int i );
     Cell& at( int x, int y );
 
     // properties
+    int simplest_unsolved_cell_index() const;
     bool solvable() const;
     bool solved() const;
 
