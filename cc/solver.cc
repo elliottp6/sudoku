@@ -36,32 +36,29 @@ static bool Constrain( Grid& grid ) {
     return modified;
 }
 
-static void FullyConstrain( Grid& grid ) {
-    while( Constrain( grid ) );
-}
-
-bool Solver::Solve( Grid& grid, __attribute__((unused)) bool guess, bool prompt ) {
+bool Solver::Solve( Grid& grid, __attribute__((unused)) bool guess, bool interactive ) {
     for(;;) {
-        // first, constrain the puzzle as much as possible
-        for( auto i = 0;; i++ ) {
-            // print puzzle state and wait for user keypress
-            if( prompt ) {
-                std::cout << "==iteration " << i << "==" << std::endl;
+        // constrain grid
+        do {
+            if( interactive ) {
+                std::cout << "==state==" << std::endl;
                 std::cout << grid << std::endl;
-
-                // TODO: we want to wait for any keypress but std::getchar waits for 'enter' to be pressed
-                if( 'q' == std::getchar() ) return false;
+                while( std::cin.get() != '\n' );
             }
+        } while( Constrain( grid ) );
 
-            // check if we found a solution
-            if( grid.solved() ) return true;
-            if( !grid.solvable() ) return false;
-
-            // otherwise, fully constrain the grid
-            FullyConstrain( grid );
-
-            // TODO: use the guess & check method
+        // check for end state
+        if( grid.solved() ) {
+            if( interactive ) std::cout << "solved!" << std::endl;
+            return true;
+        } else if( !grid.solvable() ) { 
+            if( interactive ) std::cout << "unsolvable!" << std::endl;
+            return false;
         }
+
+        // now, resort to guessing
+        if( interactive ) std::cout << "guessing required, but not yet implemented." << std::endl;
+        return false;
     }
 }
 
