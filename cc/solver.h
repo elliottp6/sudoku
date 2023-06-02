@@ -5,7 +5,7 @@ namespace Sudoku {
 
 class Solver {
 public:
-    static bool Solve( Grid& grid, bool interactive, bool guess = true );
+    static bool Solve( Grid& grid, bool guess = true, bool interactive = false );
 };
 
 } // namespace

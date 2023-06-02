@@ -38,7 +38,7 @@ static bool Constrain( Grid& grid ) {
     return modified;
 }
 
-bool Solver::Solve( Grid& grid, bool interactive, bool guess ) {
+bool Solver::Solve( Grid& grid, bool guess, bool interactive ) {
     for(;;) {
         // constrain grid
         do {
@@ -89,61 +89,38 @@ bool Solver::Solve( Grid& grid, bool interactive, bool guess ) {
 }
 
 TEST( Sudoku, Solver ) {
-    // solve  "top-row-only" example, which has multiple solutions
-    //auto g = Examples::Lookup( "top-row-only" );
-    // EXPECT_TRUE( Solver::Solve( g, false, false ) );
+    // try to solve "invalid", which has no solutions
+    auto g = Examples::Lookup( "invalid" );
+    EXPECT_FALSE( Solver::Solve( g ) );
+    EXPECT_FALSE( g.solvable() );
 
-    // solve "invalid" example, which has no solutions
-    // TODO
+    // solve "easy" w/o guessing
+    g = Examples::Lookup( "easy" );
+    EXPECT_TRUE( Solver::Solve( g, false ) );
 
-    // 
-    /*
-        // solve "invalid", which has no solutions
-        g = Examples.Get( "invalid" );
-        g.Solve();
-        Assert.IsFalse( g.Solvable );
-        Assert.IsFalse( g.Solved );
-        
-        // solve "easy" without guessing
-        g = Examples.Get( "easy" );
-        g.Solve( allowGuessing: false );
-        solution = new Grid(
-            9, 6, 4, 5, 2, 7, 8, 1, 3,
-            3, 2, 1, 4, 8, 6, 5, 9, 7,
-            8, 7, 5, 1, 9, 3, 2, 6, 4,
-            1, 5, 2, 8, 6, 4, 7, 3, 9,
-            6, 3, 8, 9, 7, 2, 1, 4, 5,
-            4, 9, 7, 3, 5, 1, 6, 2, 8,
-            2, 4, 6, 7, 3, 8, 9, 5, 1,
-            5, 8, 3, 6, 1, 9, 4, 7, 2,
-            7, 1, 9, 2, 4, 5, 3, 8, 6 );
-        Assert.IsTrue( g.Equals( ref solution ) );
-        Assert.IsTrue( g.Solvable );
-        Assert.IsTrue( g.Solved );
-
-        // solve "medium" without guessing
-        g = Examples.Get( "medium" );
-        g.Solve( allowGuessing: false );
-        Assert.IsTrue( g.Solvable );
-        Assert.IsTrue( g.Solved );
-
-        // solve "hard" without guessing
-        g = Examples.Get( "hard" );
-        g.Solve(  allowGuessing: false  );
-        Assert.IsTrue( g.Solvable );
-        Assert.IsTrue( g.Solved );
-
-        // solve "expert" without guessing (we cannot do this yet!)
-        g = Examples.Get( "expert" );
-        g.Solve( allowGuessing: false );
-        Assert.IsTrue( g.Solvable );
-        Assert.IsFalse( g.Solved );
-
-        // however, we can solve with guessing
-        g = Examples.Get( "expert" );
-        g.Solve();
-        Assert.IsTrue( g.Solvable );
-        Assert.IsTrue( g.Solved );*/
+    // TODO: check solution (needs equality overload)
+    /*auto solution = Grid( {
+        9, 6, 4, 5, 2, 7, 8, 1, 3,
+        3, 2, 1, 4, 8, 6, 5, 9, 7,
+        8, 7, 5, 1, 9, 3, 2, 6, 4,
+        1, 5, 2, 8, 6, 4, 7, 3, 9,
+        6, 3, 8, 9, 7, 2, 1, 4, 5,
+        4, 9, 7, 3, 5, 1, 6, 2, 8,
+        2, 4, 6, 7, 3, 8, 9, 5, 1,
+        5, 8, 3, 6, 1, 9, 4, 7, 2,
+        7, 1, 9, 2, 4, 5, 3, 8, 6 });*/
+    // EXPECT_TRUE( g == solution );
+  
+    // solve "medium", "hard" w/o guessing
+    g = Examples::Lookup( "medium" );
+    EXPECT_TRUE( Solver::Solve( g, false ) );
+    g = Examples::Lookup( "hard" );
+    EXPECT_TRUE( Solver::Solve( g, false ) );
+    
+    // cannot solve "expert" w/o guessing
+    g = Examples::Lookup( "expert" );
+    EXPECT_FALSE( Solver::Solve( g, false ) );
+    EXPECT_TRUE( Solver::Solve( g ) );
 }
 
 } // namespace
