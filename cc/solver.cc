@@ -1,3 +1,5 @@
+#include <gtest/gtest.h>
+#include "examples.h"
 #include "solver.h"
 namespace Sudoku {
 
@@ -36,7 +38,7 @@ static bool Constrain( Grid& grid ) {
     return modified;
 }
 
-bool Solver::Solve( Grid& grid, bool interactive ) {
+bool Solver::Solve( Grid& grid, bool interactive, bool guess ) {
     for(;;) {
         // constrain grid
         do {
@@ -53,6 +55,12 @@ bool Solver::Solve( Grid& grid, bool interactive ) {
             return true;
         } else if( !grid.solvable() ) { 
             if( interactive ) std::cout << "unsolvable!" << std::endl;
+            return false;
+        }
+
+        // check if we're allowed to guess
+        if( !guess ) {
+            if( interactive ) std::cout << "unsolvable without guessing!" << std::endl;
             return false;
         }
 
@@ -80,27 +88,16 @@ bool Solver::Solve( Grid& grid, bool interactive ) {
     }
 }
 
-} // namespace
+TEST( Sudoku, Solver ) {
+    // solve  "top-row-only" example, which has multiple solutions
+    //auto g = Examples::Lookup( "top-row-only" );
+    // EXPECT_TRUE( Solver::Solve( g, false, false ) );
 
-/*
-    // tests
-    [Test] public static void Test() {
-        // solve "top-row-only", which has multiple solutions. don't use the guess method
-        var g = Examples.Get( "top-row-only" );
-        g.Solve( allowGuessing: false );
-        var solution = new Grid(
-            1, 2, 3, 4, 5, 6, 7, 8, 9,
-            456789, 456789, 456789, 123789, 123789, 123789, 123456, 123456, 123456,
-            456789, 456789, 456789, 123789, 123789, 123789, 123456, 123456, 123456,
-            23456789, 13456789, 12456789, 12356789, 12346789, 12345789, 12345689, 12345679, 12345678,
-            23456789, 13456789, 12456789, 12356789, 12346789, 12345789, 12345689, 12345679, 12345678,
-            23456789, 13456789, 12456789, 12356789, 12346789, 12345789, 12345689, 12345679, 12345678,
-            23456789, 13456789, 12456789, 12356789, 12346789, 12345789, 12345689, 12345679, 12345678,
-            23456789, 13456789, 12456789, 12356789, 12346789, 12345789, 12345689, 12345679, 12345678,
-            23456789, 13456789, 12456789, 12356789, 12346789, 12345789, 12345689, 12345679, 12345678 );
-        Assert.IsTrue( g.Solvable );
-        Assert.IsFalse( g.Solved );
+    // solve "invalid" example, which has no solutions
+    // TODO
 
+    // 
+    /*
         // solve "invalid", which has no solutions
         g = Examples.Get( "invalid" );
         g.Solve();
@@ -146,9 +143,7 @@ bool Solver::Solve( Grid& grid, bool interactive ) {
         g = Examples.Get( "expert" );
         g.Solve();
         Assert.IsTrue( g.Solvable );
-        Assert.IsTrue( g.Solved );
-    }
+        Assert.IsTrue( g.Solved );*/
 }
 
 } // namespace
-*/
