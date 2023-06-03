@@ -16,13 +16,9 @@ impl Cell {
     
     // properties
     pub fn count( &self ) -> u32 { self.bits.count_ones() }
-    
-    pub fn min( &self ) -> Cell { Cell { bits: min_bit( self.bits ) } }
-    
+    pub fn min( &self ) -> Cell { Cell { bits: min_bit( self.bits ) } }    
     pub fn single( &self ) -> bool { is_pow2_or_zero( self.bits ) }
-    
-    pub fn solvable( &self ) -> bool { self.bits > 0 }
-    
+    pub fn solvable( &self ) -> bool { self.bits > 0 }    
     pub fn solved( &self ) -> bool { self.single() & self.solvable() }
     
     pub fn values( &self ) -> u32 {

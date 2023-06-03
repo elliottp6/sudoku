@@ -19,9 +19,32 @@ impl Grid {
         Grid { cells: cells }
     }
 
+    // methods
+    pub fn at_index( &mut self, i: usize ) -> &mut Cell { &mut self.cells[i] }
+    pub fn at_position( &mut self, x: usize, y: usize ) -> &mut Cell { &mut self.cells[x + y * Grid::HEIGHT] }
+
     // properties
     pub fn solvable( &self ) -> bool { self.cells.iter().all( |&c| c.solvable() ) }
     pub fn solved( &self ) -> bool { self.cells.iter().all( |&c| c.solved() ) }
+
+    pub fn simplest_unsolved_cell_index( &self ) -> usize {
+        let mut guess = Grid::SIZE;
+        let mut guess_count = 10;
+
+        for (i, cell) in self.cells.iter().enumerate() {
+            // get # of values at this cell
+            let count = cell.count();
+
+            // update best guess
+            if count >= 2 && count < guess_count {
+                if 2 == count { return i; } // early exit
+                guess_count = count; guess = i;
+            }
+        }
+
+        // done
+        guess
+    }
 }
 
 // serialization
@@ -32,17 +55,17 @@ impl fmt::Display for Grid {
             // write separators
             if i > 0 {
                 if 0 == i % 9 {
-                    writeln!( f );
-                    if 0 == i % 27 { writeln!( f, "------+------+------" ); }
+                    writeln!( f ).unwrap();
+                    if 0 == i % 27 { writeln!( f, "------+------+------" ).unwrap(); }
                 } else {
-                    write!( f, " " );
-                    if 0 == i % 3 { write!( f, "|" ); }
+                    write!( f, " " ).unwrap();
+                    if 0 == i % 3 { write!( f, "|" ).unwrap(); }
                 }
             }
             
             // write value
             let value = cell.values();
-            if value < 10 { write!( f, "{}", value ); } else { write!( f, "_" ); }
+            if value < 10 { write!( f, "{}", value ).unwrap(); } else { write!( f, "_" ).unwrap(); }
         }
 
         // return value
@@ -68,10 +91,16 @@ impl fmt::Display for Grid {
         assert!( g.solvable() );
         assert!( g.solved() );
 
+        // simplfest_unsolved_cell_index
+        assert_eq!( Grid::SIZE, g.simplest_unsolved_cell_index() );
+
         // unsolved grid
         g.cells[Grid::SIZE - 1] = Cell::new( 1289 );
         assert!( g.solvable() );
         assert!( !g.solved() );
+
+        // simplest_unsolved_cell_index
+        assert_eq!( Grid::SIZE - 1, g.simplest_unsolved_cell_index() );
 
         // unsolvable grid
         g.cells[0] = Cell::new( 0 );

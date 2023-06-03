@@ -12,15 +12,13 @@ pub fn constrain( grid: &mut Grid ) -> bool {
     modified
 }
 
-pub fn solve( grid: &mut Grid, interactive: bool, guesses: i32 ) -> bool {
+pub fn solve( grid: &mut Grid, interactive: bool, guess: i32 ) -> bool {
     loop {
         // constrain grid
-        let mut iteration = 0;
         loop {
             if interactive {
-                println!( "--iteration {}----------------------------", iteration );
+                println!( "--STATE----------------------------" );
                 println!( "{}", grid );
-                iteration+=1;
                 //var k = Console.ReadKey( true ).Key;
                 //if( ConsoleKey.Escape == k || ConsoleKey.Q == k ) return true;
             }
