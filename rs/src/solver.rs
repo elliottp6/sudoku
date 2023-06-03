@@ -4,6 +4,40 @@ use crate::Grid;
 // --Constraints--
 // (1) NAKED SINGLE: if a cell has a single value, remove that value from its peers
 // (2) HIDDEN SINGLE: if all the peers are missing the same value, this cell must have that value
+pub fn constrain_unit( grid: &mut Grid, cell_x: usize, cell_y: usize, unit_x: usize, unit_y: usize, unit_width: usize, unit_height: usize ) -> bool {
+    // get cell
+    let mut cell = grid.at_position( cell_x, cell_y );
+
+    // NAKED SINGLE: if a cell has a single value, remove that value from its peers
+    if cell.single() {
+        let mut modified = false;
+        for y in unit_y..(unit_y + unit_height) {
+            for x in unit_x..(unit_x + unit_width) {
+                if x == cell_x && y == cell_y { continue; }
+                let mut peer = grid.at_position( x, y );
+                let old = *peer;
+                //peer-= cell;
+                //modified|= peer != old;
+            }
+        }
+        return modified;
+    }
+
+    // HIDDEN SINGLE: if all the peers are missing the same value, this cell must have that value
+    let mut unit = Cell::full();
+    
+
+    /*
+    Cell unit = Cell();
+    for( auto y = unit_y; y < unit_y + unit_height; y++ ) for( auto x = unit_x; x < unit_x + unit_width; x++ ) if( (x != cell_x) | (y != cell_y) ) {
+        unit+= grid.at( x, y );
+    }
+    if( (unit = ~unit).solved() ) { cell = unit; return true; }
+    return false;
+    */
+    false
+}
+
 pub fn constrain( grid: &mut Grid ) -> bool {
     let mut modified = false;
     for y in 0..Grid::HEIGHT { for x in 0..Grid::HEIGHT {

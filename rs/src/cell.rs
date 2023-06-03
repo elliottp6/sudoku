@@ -7,12 +7,15 @@ pub struct Cell {
 }
 
 impl Cell {
-    // constructor
+    // constructors
     pub fn new( mut values: u32 ) -> Cell {
         let mut bits = 0;
         while values > 0 { bits|= 1 << (values % 10); values/=10; }
         Cell { bits: (bits >> 1) as u16 }
     }
+
+    // TODO: can use a constant for this Cell
+    pub fn full() -> Cell { Cell { bits: 0x1FF } }
     
     // properties
     pub fn count( &self ) -> u32 { self.bits.count_ones() }
@@ -118,6 +121,11 @@ impl ops::Not for Cell {
         assert!( c.solvable() );
         assert!( !c.solved() );
         assert_eq!( "1257", format!( "{}", c ) );
+
+        // full cell
+        let c = Cell::full();
+        assert_eq!( 123456789, c.values() );
+        assert_eq!( 9, c.count() );
 
         // operators
         assert!( Cell::new( 12 ) == Cell::new( 21 ) );
